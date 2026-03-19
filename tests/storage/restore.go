@@ -1395,14 +1395,8 @@ var _ = Describe(SIG("VirtualMachineRestore Tests", func() {
 				Expect(pvcs.Items).To(HaveLen(1))
 				pvc := pvcs.Items[0]
 
-				loginFunc := func(vmi *v1.VirtualMachineInstance, timeout ...time.Duration) error {
-					// Wait for cloud init to finish and start the agent inside the vmi.
-					Eventually(matcher.ThisVMI(vmi)).WithTimeout(4 * time.Minute).WithPolling(2 * time.Second).Should(matcher.HaveConditionTrue(v1.VirtualMachineInstanceAgentConnected))
-					return console.LoginToFedora(vmi)
-				}
-
-				doRestoreNoVMStart("", loginFunc, onlineSnapshot, true, vm.Name)
-				startVMAfterRestore(vm.Name, "", true, loginFunc)
+				doRestoreNoVMStart("", console.LoginToFedora, onlineSnapshot, true, vm.Name)
+				startVMAfterRestore(vm.Name, "", true, console.LoginToFedora)
 				Expect(restore.Status.Restores).To(HaveLen(2))
 
 				By("Expect original backend PVC to be deleted")
