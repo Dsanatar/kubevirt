@@ -87,8 +87,11 @@ func RemoveSCSIDisk(nodeName, address string) {
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to disable scsi disk")
 
 	args = []string{"/usr/sbin/modprobe", "-r", "scsi_debug"}
-	_, err = virtChrootExecuteCommandInVirtHandlerPod(nodeName, args)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to disable scsi disk")
+
+	EventuallyWithOffset(1, func() error {
+		_, err = virtChrootExecuteCommandInVirtHandlerPod(nodeName, args)
+		return err
+	}, 5*time.Second, 1*time.Second).ShouldNot(HaveOccurred(), "Failed to disable scsi disk")
 }
 
 func FixErrorDevice(nodeName string) {
